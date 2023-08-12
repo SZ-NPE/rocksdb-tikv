@@ -17,6 +17,21 @@ namespace ROCKSDB_NAMESPACE {
 // and transparently.
 // Use SetPerfLevel(PerfLevel::kEnableTime) to enable time stats.
 
+enum DBOperationType : unsigned char {
+  kOpTypeGC = 1,
+  kOpTypeFlush = 2,
+  kOpTypeCompaction = 3,
+  kOpTypeFG = 4,
+  kOpTypeUndefined = 5,
+};
+
+class DBOperationTypeGuard {
+ public:
+  DBOperationTypeGuard() = delete;
+  explicit DBOperationTypeGuard(const DBOperationType& _db_operation_type);
+  ~DBOperationTypeGuard();
+};
+
 // Break down performance counters by level and store per-level perf context in
 // PerfContextByLevel
 struct PerfContextByLevel {
@@ -243,5 +258,12 @@ struct PerfContext {
 //
 // This function never returns nullptr.
 PerfContext* get_perf_context();
+
+DBOperationType get_db_operation_type();
+
+bool is_foreground_operation();
+bool is_flush_operation();
+bool is_compaction_operation();
+bool is_garbage_collenction_operation();
 
 }  // namespace ROCKSDB_NAMESPACE

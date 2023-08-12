@@ -555,6 +555,16 @@ IOStatus WritableFileWriter::WriteBuffered(const char* data, size_t size) {
     }
 
     IOSTATS_ADD(bytes_written, allowed);
+    RecordTick(stats_, IO_WRITE_BYTES, allowed);
+    if (is_flush_operation()) {
+      RecordTick(stats_, FLUSH_IO_WRITE_BYTES, allowed);
+    } else if (is_compaction_operation()) {
+      RecordTick(stats_, COMPACTION_IO_WRITE_BYTES, allowed);
+    } else if (is_foreground_operation()) {
+      RecordTick(stats_, FG_IO_WRITE_BYTES, allowed);
+    } else if (is_garbage_collenction_operation()) {
+      RecordTick(stats_, GC_IO_WRITE_BYTES, allowed);
+    }
     TEST_KILL_RANDOM("WritableFileWriter::WriteBuffered:0");
 
     left -= allowed;
@@ -642,6 +652,16 @@ IOStatus WritableFileWriter::WriteBufferedWithChecksum(const char* data,
   }
 
   IOSTATS_ADD(bytes_written, left);
+  RecordTick(stats_, IO_WRITE_BYTES, left);
+  if (is_flush_operation()) {
+    RecordTick(stats_, FLUSH_IO_WRITE_BYTES, left);
+  } else if (is_compaction_operation()) {
+    RecordTick(stats_, COMPACTION_IO_WRITE_BYTES, left);
+  } else if (is_foreground_operation()) {
+    RecordTick(stats_, FG_IO_WRITE_BYTES, left);
+  } else if (is_garbage_collenction_operation()) {
+    RecordTick(stats_, GC_IO_WRITE_BYTES, left);
+  }
   TEST_KILL_RANDOM("WritableFileWriter::WriteBuffered:0");
 
   // Buffer write is successful, reset the buffer current size to 0 and reset
@@ -749,6 +769,16 @@ IOStatus WritableFileWriter::WriteDirect() {
     }
 
     IOSTATS_ADD(bytes_written, size);
+    RecordTick(stats_, IO_WRITE_BYTES, size);
+    if (is_flush_operation()) {
+      RecordTick(stats_, FLUSH_IO_WRITE_BYTES, size);
+    } else if (is_compaction_operation()) {
+      RecordTick(stats_, COMPACTION_IO_WRITE_BYTES, size);
+    } else if (is_foreground_operation()) {
+      RecordTick(stats_, FG_IO_WRITE_BYTES, size);
+    } else if (is_garbage_collenction_operation()) {
+      RecordTick(stats_, GC_IO_WRITE_BYTES, size);
+    }
     left -= size;
     src += size;
     write_offset += size;
@@ -849,6 +879,16 @@ IOStatus WritableFileWriter::WriteDirectWithChecksum() {
   }
 
   IOSTATS_ADD(bytes_written, left);
+  RecordTick(stats_, IO_WRITE_BYTES, left);
+  if (is_flush_operation()) {
+    RecordTick(stats_, FLUSH_IO_WRITE_BYTES, left);
+  } else if (is_compaction_operation()) {
+    RecordTick(stats_, COMPACTION_IO_WRITE_BYTES, left);
+  } else if (is_foreground_operation()) {
+    RecordTick(stats_, FG_IO_WRITE_BYTES, left);
+  } else if (is_garbage_collenction_operation()) {
+    RecordTick(stats_, GC_IO_WRITE_BYTES, left);
+  }
   assert((next_write_offset_ % alignment) == 0);
   uint64_t cur_size = flushed_size_.load(std::memory_order_acquire);
   flushed_size_.store(cur_size + left, std::memory_order_release);

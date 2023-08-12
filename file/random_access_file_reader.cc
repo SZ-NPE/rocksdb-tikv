@@ -189,6 +189,16 @@ IOStatus RandomAccessFileReader::Read(const IOOptions& opts, uint64_t offset,
                             tmp.size(), orig_offset);
           }
         }
+         RecordTick(stats_, RANDOM_IO_READ_BYTES, tmp.size());
+        if (is_flush_operation()) {
+          RecordTick(stats_, FLUSH_IO_READ_BYTES, tmp.size());
+        } else if (is_compaction_operation()) {
+          RecordTick(stats_, COMPACTION_IO_READ_BYTES, tmp.size());
+        } else if (is_foreground_operation()) {
+          RecordTick(stats_, FG_IO_READ_BYTES, tmp.size());
+        } else if (is_garbage_collenction_operation()) {
+          RecordTick(stats_, GC_IO_READ_BYTES, tmp.size());
+        }
 
         buf.Size(buf.CurrentSize() + tmp.size());
         if (!io_s.ok() || tmp.size() < allowed) {
@@ -243,6 +253,16 @@ IOStatus RandomAccessFileReader::Read(const IOOptions& opts, uint64_t offset,
           assert(!opts.timeout.count() || allowed == n);
           io_s = file_->Read(offset + pos, allowed, opts, &tmp_result,
                              scratch + pos, nullptr);
+        }
+        RecordTick(stats_, RANDOM_IO_READ_BYTES, tmp_result.size());
+        if (is_flush_operation()) {
+          RecordTick(stats_, FLUSH_IO_READ_BYTES, tmp_result.size());
+        } else if (is_compaction_operation()) {
+          RecordTick(stats_, COMPACTION_IO_READ_BYTES, tmp_result.size());
+        } else if (is_foreground_operation()) {
+          RecordTick(stats_, FG_IO_READ_BYTES, tmp_result.size());
+        } else if (is_garbage_collenction_operation()) {
+          RecordTick(stats_, GC_IO_READ_BYTES, tmp_result.size());
         }
 #ifndef ROCKSDB_LITE
         if (ShouldNotifyListeners()) {
@@ -453,6 +473,31 @@ IOStatus RandomAccessFileReader::MultiRead(const IOOptions& opts,
       StatisticAddBytesByTemperature(stats_, file_temperature_,
                                      read_reqs[i].result.size());
       StatisticAddCountByTemperature(stats_, file_temperature_, 1);
+      if (use_direct_io()) {
+        RecordTick(stats_, RANDOM_IO_READ_BYTES, fs_reqs[i].result.size());
+        if (is_flush_operation()) {
+          RecordTick(stats_, FLUSH_IO_READ_BYTES, fs_reqs[i].result.size());
+        } else if (is_compaction_operation()) {
+          RecordTick(stats_, COMPACTION_IO_READ_BYTES,
+                     fs_reqs[i].result.size());
+        } else if (is_foreground_operation()) {
+          RecordTick(stats_, FG_IO_READ_BYTES, fs_reqs[i].result.size());
+        } else if (is_garbage_collenction_operation()) {
+          RecordTick(stats_, GC_IO_READ_BYTES, fs_reqs[i].result.size());
+        }
+      } else {
+        RecordTick(stats_, RANDOM_IO_READ_BYTES, read_reqs[i].result.size());
+        if (is_flush_operation()) {
+          RecordTick(stats_, FLUSH_IO_READ_BYTES, read_reqs[i].result.size());
+        } else if (is_compaction_operation()) {
+          RecordTick(stats_, COMPACTION_IO_READ_BYTES,
+                     read_reqs[i].result.size());
+        } else if (is_foreground_operation()) {
+          RecordTick(stats_, FG_IO_READ_BYTES, read_reqs[i].result.size());
+        } else if (is_garbage_collenction_operation()) {
+          RecordTick(stats_, GC_IO_READ_BYTES, read_reqs[i].result.size());
+        }
+      }
     }
     SetPerfLevel(prev_perf_level);
   }
