@@ -231,6 +231,8 @@ const std::vector<std::pair<Tickers, std::string>> TickersNameMap = {
     {COMPACTION_IO_WRITE_BYTES, "rocksdb.compaction.io.write.bytes"},
     {FG_IO_READ_BYTES, "rocksdb.fg.io.read.bytes"},
     {FG_IO_WRITE_BYTES, "rocksdb.fg.io.write.bytes"},
+    {GC_IO_READ_BYTES, "rocksdb.gc.io.read.bytes"},
+    {GC_IO_WRITE_BYTES, "rocksdb.gc.io.write.bytes"},
 };
 
 const std::vector<std::pair<Histograms, std::string>> HistogramsNameMap = {
